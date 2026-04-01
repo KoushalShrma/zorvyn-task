@@ -2,6 +2,7 @@ package task.zorvyn.assignment.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import task.zorvyn.assignment.entity.Role;
 import task.zorvyn.assignment.entity.User;
@@ -16,6 +17,7 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public User createUser(User user) {
@@ -36,6 +38,7 @@ public class UserService {
 
         // We default role/status for safer onboarding if caller omits them.
         user.setUsername(username);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(user.getRole() == null ? Role.VIEWER : user.getRole());
         user.setStatus(user.getStatus() == null ? UserStatus.ACTIVE : user.getStatus());
 

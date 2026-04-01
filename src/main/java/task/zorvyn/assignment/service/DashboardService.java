@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import task.zorvyn.assignment.dto.CategorySummaryDto;
 import task.zorvyn.assignment.dto.DashboardSummaryDto;
+import task.zorvyn.assignment.dto.RecordResponseDTO;
 import task.zorvyn.assignment.entity.FinancialRecord;
 import task.zorvyn.assignment.entity.FinancialRecordType;
 import task.zorvyn.assignment.repository.CategoryTotalView;
@@ -58,9 +59,27 @@ public class DashboardService {
                 .toList();
     }
 
-    public List<FinancialRecord> getRecentActivity() {
+    public List<RecordResponseDTO> getRecentActivity() {
         // We read only non-deleted records so dashboard widgets stay consistent
         // with the rest of the application APIs.
-        return financialRecordRepository.findTop5ByIsDeletedFalseOrderByCreatedAtDesc();
+        return financialRecordRepository.findTop5ByIsDeletedFalseOrderByCreatedAtDesc()
+                .stream()
+                .map(this::toRecordResponseDto)
+                .toList();
+    }
+
+    private RecordResponseDTO toRecordResponseDto(FinancialRecord record) {
+        return RecordResponseDTO.builder()
+                .id(record.getId())
+                .amount(record.getAmount())
+                .type(record.getType())
+                .category(record.getCategory())
+                .date(record.getDate())
+                .notes(record.getNotes())
+                .createdByUserId(record.getCreatedBy() != null ? record.getCreatedBy().getId() : null)
+                .createdByUsername(record.getCreatedBy() != null ? record.getCreatedBy().getUsername() : null)
+                .createdAt(record.getCreatedAt())
+                .lastModifiedAt(record.getLastModifiedAt())
+                .build();
     }
 }

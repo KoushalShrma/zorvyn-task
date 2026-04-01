@@ -2,6 +2,7 @@ package task.zorvyn.assignment.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import task.zorvyn.assignment.entity.FinancialRecord;
 import task.zorvyn.assignment.entity.FinancialRecordType;
@@ -21,6 +22,7 @@ public class DataInitializer implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final FinancialRecordRepository financialRecordRepository;
+        private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) {
@@ -32,21 +34,21 @@ public class DataInitializer implements CommandLineRunner {
         // meaningful dashboard numbers without manual setup.
         User viewer = userRepository.save(User.builder()
                 .username("viewer.user")
-                .password("viewer@123")
+                .password(passwordEncoder.encode("viewer@123"))
                 .role(Role.VIEWER)
                 .status(UserStatus.ACTIVE)
                 .build());
 
         User analyst = userRepository.save(User.builder()
                 .username("analyst.user")
-                .password("analyst@123")
+                .password(passwordEncoder.encode("analyst@123"))
                 .role(Role.ANALYST)
                 .status(UserStatus.ACTIVE)
                 .build());
 
         User admin = userRepository.save(User.builder()
                 .username("admin.user")
-                .password("admin@123")
+                .password(passwordEncoder.encode("admin@123"))
                 .role(Role.ADMIN)
                 .status(UserStatus.ACTIVE)
                 .build());

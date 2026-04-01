@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import task.zorvyn.assignment.entity.FinancialRecord;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -20,5 +19,5 @@ public class DashboardSummaryDto {
     private BigDecimal totalExpenses;
     private BigDecimal netBalance;
     private List<CategorySummaryDto> categoryWiseTotals;
-    private List<FinancialRecord> recentActivity;
+    private List<RecordResponseDTO> recentActivity;
 }

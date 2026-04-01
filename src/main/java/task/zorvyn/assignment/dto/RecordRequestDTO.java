@@ -41,7 +41,6 @@ public class RecordRequestDTO {
     @Size(max = 500, message = "Notes cannot exceed 500 characters")
     private String notes;
 
-    @NotNull(message = "createdByUserId is required")
     @Positive(message = "createdByUserId must be a positive number")
     private Long createdByUserId;
 }
