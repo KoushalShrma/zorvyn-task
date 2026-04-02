@@ -28,6 +28,9 @@ public class FinancialRecordService {
 
     @Transactional
     public FinancialRecord createRecord(FinancialRecord record, Long createdByUserId) {
+        if (record == null) {
+            throw new IllegalArgumentException("Payload cannot be null");
+        }
         log.info("Service call: create financial record for userId={}", createdByUserId);
         validateRecordPayload(record);
 
@@ -78,6 +81,9 @@ public class FinancialRecordService {
 
     @Transactional
     public FinancialRecord updateRecord(Long recordId, FinancialRecord payload) {
+        if (payload == null) {
+            throw new IllegalArgumentException("Payload cannot be null");
+        }
         log.info("Service call: update financial record id={}", recordId);
         validateRecordPayload(payload);
 
