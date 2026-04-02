@@ -2,7 +2,6 @@ package task.zorvyn.assignment.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -18,9 +17,11 @@ import task.zorvyn.assignment.repository.UserRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+/**
+ * Financial record business logic.
+ */
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class FinancialRecordService {
 
     private final FinancialRecordRepository financialRecordRepository;
@@ -28,34 +29,28 @@ public class FinancialRecordService {
 
     @Transactional
     public FinancialRecord createRecord(FinancialRecord record, Long createdByUserId) {
-        if (record == null) {
-            throw new IllegalArgumentException("Payload cannot be null");
-        }
-        log.info("Service call: create financial record for userId={}", createdByUserId);
         validateRecordPayload(record);
 
-        User creatorUserEntity = userRepository.findById(createdByUserId)
+        User creator = userRepository.findById(createdByUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("Creator user not found for id: " + createdByUserId));
 
-        if (creatorUserEntity.getStatus() != UserStatus.ACTIVE) {
+        if (creator.getStatus() != UserStatus.ACTIVE) {
             throw new UnauthorizedActionException("Inactive users cannot create financial records");
         }
 
         record.setId(null);
-        record.setCreatedBy(creatorUserEntity);
+        record.setCreatedBy(creator);
         record.setIsDeleted(false);
 
         return financialRecordRepository.save(record);
     }
 
     public FinancialRecord getRecordById(Long recordId) {
-        log.info("Service call: fetch financial record by id={}", recordId);
         return financialRecordRepository.findByIdAndIsDeletedFalse(recordId)
                 .orElseThrow(() -> new ResourceNotFoundException("Financial record not found for id: " + recordId));
     }
 
     public Page<FinancialRecord> getRecords(Pageable pageable) {
-        log.info("Service call: fetch paginated financial records");
         return financialRecordRepository.findAllByIsDeletedFalse(pageable);
     }
 
@@ -66,45 +61,39 @@ public class FinancialRecordService {
             LocalDate endDate,
             Pageable pageable
     ) {
-        log.info("Service call: fetch filtered records category={}, type={}, startDate={}, endDate={}", category, type, startDate, endDate);
         if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
             throw new IllegalArgumentException("startDate cannot be after endDate");
         }
 
-        String normalizedCategoryFilter = category == null ? null : category.trim();
-        if (normalizedCategoryFilter != null && normalizedCategoryFilter.isBlank()) {
-            normalizedCategoryFilter = null;
+        String normalizedCategory = category == null ? null : category.trim();
+        if (normalizedCategory != null && normalizedCategory.isBlank()) {
+            normalizedCategory = null;
         }
 
-        return financialRecordRepository.findByFilters(normalizedCategoryFilter, type, startDate, endDate, pageable);
+        return financialRecordRepository.findByFilters(normalizedCategory, type, startDate, endDate, pageable);
     }
 
     @Transactional
     public FinancialRecord updateRecord(Long recordId, FinancialRecord payload) {
-        if (payload == null) {
-            throw new IllegalArgumentException("Payload cannot be null");
-        }
-        log.info("Service call: update financial record id={}", recordId);
         validateRecordPayload(payload);
 
-        FinancialRecord existingFinancialRecordEntity = getRecordById(recordId);
+        FinancialRecord existing = getRecordById(recordId);
 
-        existingFinancialRecordEntity.setAmount(payload.getAmount());
-        existingFinancialRecordEntity.setType(payload.getType());
-        existingFinancialRecordEntity.setCategory(payload.getCategory().trim());
-        existingFinancialRecordEntity.setDate(payload.getDate());
-        existingFinancialRecordEntity.setNotes(payload.getNotes());
+        existing.setAmount(payload.getAmount());
+        existing.setType(payload.getType());
+        existing.setCategory(payload.getCategory().trim());
+        existing.setDate(payload.getDate());
+        existing.setNotes(payload.getNotes());
 
-        return financialRecordRepository.save(existingFinancialRecordEntity);
+        return financialRecordRepository.save(existing);
     }
 
     @Transactional
     public void softDeleteRecord(Long recordId) {
-        log.info("Service call: soft delete financial record id={}", recordId);
-        FinancialRecord existingFinancialRecordEntity = getRecordById(recordId);
+        FinancialRecord existing = getRecordById(recordId);
 
-        existingFinancialRecordEntity.setIsDeleted(true);
-        financialRecordRepository.save(existingFinancialRecordEntity);
+        existing.setIsDeleted(true);
+        financialRecordRepository.save(existing);
     }
 
     private void validateRecordPayload(FinancialRecord record) {
