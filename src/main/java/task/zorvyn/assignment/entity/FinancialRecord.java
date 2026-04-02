@@ -62,20 +62,18 @@ public class FinancialRecord {
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
 
-    // Financial systems must keep immutable creation timestamps for traceability.
-    // @CreatedDate ensures backend-controlled audit values (not client-controlled).
+    
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    // Last modified timestamp is important for incident analysis and audit trails.
-    // If a record is unexpectedly changed, we can quickly see when it happened.
+   
+
     @LastModifiedDate
     @Column(name = "last_modified_at")
     private LocalDateTime lastModifiedAt;
 
-    // Soft delete keeps history for audits and analytics while hiding records
-    // from normal reads. This is safer than hard deleting finance data.
+    
     @Builder.Default
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;

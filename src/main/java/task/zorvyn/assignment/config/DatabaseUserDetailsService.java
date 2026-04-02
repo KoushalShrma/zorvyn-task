@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import task.zorvyn.assignment.entity.UserStatus;
 import task.zorvyn.assignment.repository.UserRepository;
 
+
 @Service
 @RequiredArgsConstructor
 public class DatabaseUserDetailsService implements UserDetailsService {
@@ -22,7 +23,6 @@ public class DatabaseUserDetailsService implements UserDetailsService {
 
         return User.withUsername(user.getUsername())
                 .password(user.getPassword())
-                // Prefixing with ROLE_ happens automatically via roles(...).
                 .roles(user.getRole().name())
                 .disabled(user.getStatus() != UserStatus.ACTIVE)
                 .build();

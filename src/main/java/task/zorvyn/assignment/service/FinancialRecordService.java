@@ -35,8 +35,6 @@ public class FinancialRecordService {
             throw new UnauthorizedActionException("Inactive users cannot create financial records");
         }
 
-        // We always trust the authenticated creator source (service input), not client payload,
-        // so consumers cannot spoof record ownership.
         record.setId(null);
         record.setCreatedBy(creator);
         record.setIsDeleted(false);
@@ -91,8 +89,6 @@ public class FinancialRecordService {
     public void softDeleteRecord(Long recordId) {
         FinancialRecord existing = getRecordById(recordId);
 
-        // Soft delete preserves history for dashboards/audits while preventing
-        // the record from showing up in normal read APIs.
         existing.setIsDeleted(true);
         financialRecordRepository.save(existing);
     }
@@ -101,7 +97,6 @@ public class FinancialRecordService {
         if (record == null) {
             throw new IllegalArgumentException("Financial record payload is required");
         }
-        // Finance amounts must be strictly positive to avoid ambiguous zero-value entries.
         if (record.getAmount() == null || record.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Amount must be greater than zero");
         }
@@ -114,8 +109,6 @@ public class FinancialRecordService {
         if (record.getDate() == null) {
             throw new IllegalArgumentException("Date is required");
         }
-        // We reject future-dated records to keep financial reporting period-safe
-        // and to prevent accidental/intentional projection data in historical books.
         if (record.getDate().isAfter(LocalDate.now())) {
             throw new IllegalArgumentException("Record date cannot be in the future");
         }

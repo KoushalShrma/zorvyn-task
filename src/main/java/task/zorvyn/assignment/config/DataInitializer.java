@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+
 @Component
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
@@ -30,8 +31,6 @@ public class DataInitializer implements CommandLineRunner {
             return;
         }
 
-        // DX-focused seed data: reviewers can run the app and immediately see
-        // meaningful dashboard numbers without manual setup.
         User viewer = userRepository.save(User.builder()
                 .username("viewer.user")
                 .password(passwordEncoder.encode("viewer@123"))

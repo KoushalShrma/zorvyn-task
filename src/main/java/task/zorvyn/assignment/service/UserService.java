@@ -12,6 +12,7 @@ import task.zorvyn.assignment.repository.UserRepository;
 
 import java.util.List;
 
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -36,7 +37,6 @@ public class UserService {
             throw new IllegalArgumentException("Username already exists");
         }
 
-        // We default role/status for safer onboarding if caller omits them.
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(user.getRole() == null ? Role.VIEWER : user.getRole());

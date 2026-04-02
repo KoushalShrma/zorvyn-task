@@ -13,6 +13,7 @@ import task.zorvyn.assignment.repository.FinancialRecordRepository;
 import java.math.BigDecimal;
 import java.util.List;
 
+
 @Service
 @RequiredArgsConstructor
 public class DashboardService {
@@ -23,8 +24,6 @@ public class DashboardService {
         BigDecimal totalIncome = getTotalIncome();
         BigDecimal totalExpenses = getTotalExpenses();
 
-        // Net balance is defined as income - expenses. We keep this explicit
-        // instead of re-querying DB to keep logic easy to read and maintain.
         BigDecimal netBalance = totalIncome.subtract(totalExpenses);
 
         return DashboardSummaryDto.builder()
@@ -60,8 +59,6 @@ public class DashboardService {
     }
 
     public List<RecordResponseDTO> getRecentActivity() {
-        // We read only non-deleted records so dashboard widgets stay consistent
-        // with the rest of the application APIs.
         return financialRecordRepository.findTop5ByIsDeletedFalseOrderByCreatedAtDesc()
                 .stream()
                 .map(this::toRecordResponseDto)

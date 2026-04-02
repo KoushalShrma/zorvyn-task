@@ -26,6 +26,7 @@ import task.zorvyn.assignment.service.FinancialRecordService;
 
 import java.time.LocalDate;
 
+
 @RestController
 @RequestMapping("/api/records")
 @RequiredArgsConstructor

@@ -16,9 +16,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationErrors(MethodArgumentNotValidException exception) {
         Map<String, String> errors = new LinkedHashMap<>();
-
-        // We return field -> message so API consumers can directly map errors
-        // to form inputs without extra parsing logic.
         exception.getBindingResult().getFieldErrors()
                 .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
 
@@ -45,7 +42,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericException(Exception exception) {
-        // Intentionally return a safe message so internal details do not leak.
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(buildErrorBody(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error occurred. Please contact support."));
     }
