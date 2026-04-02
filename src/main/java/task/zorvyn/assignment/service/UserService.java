@@ -26,18 +26,18 @@ public class UserService {
             throw new IllegalArgumentException("User payload is required");
         }
 
-        String username = user.getUsername() == null ? null : user.getUsername().trim();
-        if (username == null || username.isBlank()) {
+        String trimmedUsername = user.getUsername() == null ? null : user.getUsername().trim();
+        if (trimmedUsername == null || trimmedUsername.isBlank()) {
             throw new IllegalArgumentException("Username is required");
         }
         if (user.getPassword() == null || user.getPassword().isBlank()) {
             throw new IllegalArgumentException("Password is required");
         }
-        if (userRepository.existsByUsername(username)) {
+        if (userRepository.existsByUsername(trimmedUsername)) {
             throw new IllegalArgumentException("Username already exists");
         }
 
-        user.setUsername(username);
+        user.setUsername(trimmedUsername);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(user.getRole() == null ? Role.VIEWER : user.getRole());
         user.setStatus(user.getStatus() == null ? UserStatus.ACTIVE : user.getStatus());
@@ -51,9 +51,9 @@ public class UserService {
             throw new IllegalArgumentException("Role is required");
         }
 
-        User user = getUserById(userId);
-        user.setRole(role);
-        return userRepository.save(user);
+        User existingUserEntity = getUserById(userId);
+        existingUserEntity.setRole(role);
+        return userRepository.save(existingUserEntity);
     }
 
     @Transactional
@@ -62,9 +62,9 @@ public class UserService {
             throw new IllegalArgumentException("Status is required");
         }
 
-        User user = getUserById(userId);
-        user.setStatus(status);
-        return userRepository.save(user);
+        User existingUserEntity = getUserById(userId);
+        existingUserEntity.setStatus(status);
+        return userRepository.save(existingUserEntity);
     }
 
     public List<User> getAllUsers() {

@@ -28,15 +28,15 @@ public class FinancialRecordService {
     public FinancialRecord createRecord(FinancialRecord record, Long createdByUserId) {
         validateRecordPayload(record);
 
-        User creator = userRepository.findById(createdByUserId)
+        User creatorUserEntity = userRepository.findById(createdByUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("Creator user not found for id: " + createdByUserId));
 
-        if (creator.getStatus() != UserStatus.ACTIVE) {
+        if (creatorUserEntity.getStatus() != UserStatus.ACTIVE) {
             throw new UnauthorizedActionException("Inactive users cannot create financial records");
         }
 
         record.setId(null);
-        record.setCreatedBy(creator);
+        record.setCreatedBy(creatorUserEntity);
         record.setIsDeleted(false);
 
         return financialRecordRepository.save(record);
@@ -62,35 +62,35 @@ public class FinancialRecordService {
             throw new IllegalArgumentException("startDate cannot be after endDate");
         }
 
-        String normalizedCategory = category == null ? null : category.trim();
-        if (normalizedCategory != null && normalizedCategory.isBlank()) {
-            normalizedCategory = null;
+        String normalizedCategoryFilter = category == null ? null : category.trim();
+        if (normalizedCategoryFilter != null && normalizedCategoryFilter.isBlank()) {
+            normalizedCategoryFilter = null;
         }
 
-        return financialRecordRepository.findByFilters(normalizedCategory, type, startDate, endDate, pageable);
+        return financialRecordRepository.findByFilters(normalizedCategoryFilter, type, startDate, endDate, pageable);
     }
 
     @Transactional
     public FinancialRecord updateRecord(Long recordId, FinancialRecord payload) {
         validateRecordPayload(payload);
 
-        FinancialRecord existing = getRecordById(recordId);
+        FinancialRecord existingFinancialRecordEntity = getRecordById(recordId);
 
-        existing.setAmount(payload.getAmount());
-        existing.setType(payload.getType());
-        existing.setCategory(payload.getCategory().trim());
-        existing.setDate(payload.getDate());
-        existing.setNotes(payload.getNotes());
+        existingFinancialRecordEntity.setAmount(payload.getAmount());
+        existingFinancialRecordEntity.setType(payload.getType());
+        existingFinancialRecordEntity.setCategory(payload.getCategory().trim());
+        existingFinancialRecordEntity.setDate(payload.getDate());
+        existingFinancialRecordEntity.setNotes(payload.getNotes());
 
-        return financialRecordRepository.save(existing);
+        return financialRecordRepository.save(existingFinancialRecordEntity);
     }
 
     @Transactional
     public void softDeleteRecord(Long recordId) {
-        FinancialRecord existing = getRecordById(recordId);
+        FinancialRecord existingFinancialRecordEntity = getRecordById(recordId);
 
-        existing.setIsDeleted(true);
-        financialRecordRepository.save(existing);
+        existingFinancialRecordEntity.setIsDeleted(true);
+        financialRecordRepository.save(existingFinancialRecordEntity);
     }
 
     private void validateRecordPayload(FinancialRecord record) {
