@@ -14,7 +14,6 @@ import task.zorvyn.assignment.repository.FinancialRecordRepository;
 import java.math.BigDecimal;
 import java.util.List;
 
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
