@@ -2,6 +2,7 @@ package task.zorvyn.assignment.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,18 +28,21 @@ import java.util.List;
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
+@Slf4j
 public class UserController {
 
     private final UserService userService;
 
     @PostMapping
     public ResponseEntity<UserResponseDTO> createUser(@Valid @RequestBody UserRequestDTO request) {
+        log.info("Creating user with username={}", request.getUsername());
         User created = userService.createUser(toEntity(request));
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(created));
     }
 
     @GetMapping
     public ResponseEntity<List<UserResponseDTO>> getUsers() {
+        log.info("Fetching all users");
         List<UserResponseDTO> users = userService.getAllUsers().stream()
                 .map(this::toResponse)
                 .toList();
@@ -47,16 +51,19 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDTO> getUserById(@PathVariable Long id) {
+        log.info("Fetching user by id={}", id);
         return ResponseEntity.ok(toResponse(userService.getUserById(id)));
     }
 
     @PatchMapping("/{id}/role")
     public ResponseEntity<UserResponseDTO> assignRole(@PathVariable Long id, @RequestParam Role role) {
+        log.info("Assigning role={} to user id={}", role, id);
         return ResponseEntity.ok(toResponse(userService.assignRole(id, role)));
     }
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<UserResponseDTO> changeStatus(@PathVariable Long id, @RequestParam UserStatus status) {
+        log.info("Changing status={} for user id={}", status, id);
         return ResponseEntity.ok(toResponse(userService.changeStatus(id, status)));
     }
 

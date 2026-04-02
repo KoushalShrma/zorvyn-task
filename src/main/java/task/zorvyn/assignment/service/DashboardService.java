@@ -1,6 +1,7 @@
 package task.zorvyn.assignment.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import task.zorvyn.assignment.dto.CategorySummaryDto;
 import task.zorvyn.assignment.dto.DashboardSummaryDto;
@@ -16,11 +17,13 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class DashboardService {
 
     private final FinancialRecordRepository financialRecordRepository;
 
     public DashboardSummaryDto getDashboardSummary() {
+        log.info("Service call: build dashboard summary");
         BigDecimal totalIncome = getTotalIncome();
         BigDecimal totalExpenses = getTotalExpenses();
 
@@ -36,18 +39,22 @@ public class DashboardService {
     }
 
     public BigDecimal getTotalIncome() {
+        log.info("Service call: calculate total income");
         return financialRecordRepository.sumAmountByType(FinancialRecordType.INCOME);
     }
 
     public BigDecimal getTotalExpenses() {
+        log.info("Service call: calculate total expenses");
         return financialRecordRepository.sumAmountByType(FinancialRecordType.EXPENSE);
     }
 
     public BigDecimal getNetBalance() {
+        log.info("Service call: calculate net balance");
         return getTotalIncome().subtract(getTotalExpenses());
     }
 
     public List<CategorySummaryDto> getCategoryWiseTotals() {
+        log.info("Service call: calculate category-wise totals");
         List<CategoryTotalView> grouped = financialRecordRepository.summarizeAmountByCategory();
 
         return grouped.stream()
@@ -59,6 +66,7 @@ public class DashboardService {
     }
 
     public List<RecordResponseDTO> getRecentActivity() {
+        log.info("Service call: fetch recent activity");
         return financialRecordRepository.findTop5ByIsDeletedFalseOrderByCreatedAtDesc()
                 .stream()
                 .map(this::toRecordResponseDto)

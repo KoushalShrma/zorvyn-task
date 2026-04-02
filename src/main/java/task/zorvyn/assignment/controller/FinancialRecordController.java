@@ -2,6 +2,7 @@ package task.zorvyn.assignment.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -30,6 +31,7 @@ import java.time.LocalDate;
 @RestController
 @RequestMapping("/api/records")
 @RequiredArgsConstructor
+@Slf4j
 public class FinancialRecordController {
 
     private final FinancialRecordService financialRecordService;
@@ -37,6 +39,7 @@ public class FinancialRecordController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<RecordResponseDTO> createRecord(@Valid @RequestBody RecordRequestDTO request) {
+        log.info("Creating financial record for userId={} and type={}", request.getCreatedByUserId(), request.getType());
         if (request.getCreatedByUserId() == null) {
             throw new IllegalArgumentException("createdByUserId is required for creating a record");
         }
@@ -51,6 +54,7 @@ public class FinancialRecordController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'ANALYST')")
     public ResponseEntity<RecordResponseDTO> getRecordById(@PathVariable Long id) {
+        log.info("Fetching financial record by id={}", id);
         return ResponseEntity.ok(toResponse(financialRecordService.getRecordById(id)));
     }
 
@@ -63,6 +67,7 @@ public class FinancialRecordController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @PageableDefault(size = 10) Pageable pageable
     ) {
+        log.info("Fetching records with filters category={}, type={}, startDate={}, endDate={}", category, type, startDate, endDate);
         Page<FinancialRecord> page;
         if (category != null || type != null || startDate != null || endDate != null) {
             page = financialRecordService.getFilteredRecords(category, type, startDate, endDate, pageable);
@@ -79,6 +84,7 @@ public class FinancialRecordController {
             @PathVariable Long id,
             @Valid @RequestBody RecordRequestDTO request
     ) {
+        log.info("Updating financial record id={}", id);
         FinancialRecord updated = financialRecordService.updateRecord(id, toEntity(request));
         return ResponseEntity.ok(toResponse(updated));
     }
@@ -86,6 +92,7 @@ public class FinancialRecordController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> softDeleteRecord(@PathVariable Long id) {
+        log.info("Soft deleting financial record id={}", id);
         financialRecordService.softDeleteRecord(id);
         return ResponseEntity.noContent().build();
     }

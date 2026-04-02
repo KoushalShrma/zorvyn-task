@@ -2,6 +2,7 @@ package task.zorvyn.assignment.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import task.zorvyn.assignment.entity.Role;
@@ -15,6 +16,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
@@ -22,6 +24,7 @@ public class UserService {
 
     @Transactional
     public User createUser(User user) {
+        log.info("Service call: create user request received");
         if (user == null) {
             throw new IllegalArgumentException("User payload is required");
         }
@@ -47,6 +50,7 @@ public class UserService {
 
     @Transactional
     public User assignRole(Long userId, Role role) {
+        log.info("Service call: assign role={} for userId={}", role, userId);
         if (role == null) {
             throw new IllegalArgumentException("Role is required");
         }
@@ -58,6 +62,7 @@ public class UserService {
 
     @Transactional
     public User changeStatus(Long userId, UserStatus status) {
+        log.info("Service call: change status={} for userId={}", status, userId);
         if (status == null) {
             throw new IllegalArgumentException("Status is required");
         }
@@ -68,10 +73,12 @@ public class UserService {
     }
 
     public List<User> getAllUsers() {
+        log.info("Service call: fetch all users");
         return userRepository.findAll();
     }
 
     public User getUserById(Long userId) {
+        log.info("Service call: fetch user by id={}", userId);
         return userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found for id: " + userId));
     }

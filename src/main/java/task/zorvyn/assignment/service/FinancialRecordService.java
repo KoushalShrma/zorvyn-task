@@ -2,6 +2,7 @@ package task.zorvyn.assignment.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class FinancialRecordService {
 
     private final FinancialRecordRepository financialRecordRepository;
@@ -26,6 +28,7 @@ public class FinancialRecordService {
 
     @Transactional
     public FinancialRecord createRecord(FinancialRecord record, Long createdByUserId) {
+        log.info("Service call: create financial record for userId={}", createdByUserId);
         validateRecordPayload(record);
 
         User creatorUserEntity = userRepository.findById(createdByUserId)
@@ -43,11 +46,13 @@ public class FinancialRecordService {
     }
 
     public FinancialRecord getRecordById(Long recordId) {
+        log.info("Service call: fetch financial record by id={}", recordId);
         return financialRecordRepository.findByIdAndIsDeletedFalse(recordId)
                 .orElseThrow(() -> new ResourceNotFoundException("Financial record not found for id: " + recordId));
     }
 
     public Page<FinancialRecord> getRecords(Pageable pageable) {
+        log.info("Service call: fetch paginated financial records");
         return financialRecordRepository.findAllByIsDeletedFalse(pageable);
     }
 
@@ -58,6 +63,7 @@ public class FinancialRecordService {
             LocalDate endDate,
             Pageable pageable
     ) {
+        log.info("Service call: fetch filtered records category={}, type={}, startDate={}, endDate={}", category, type, startDate, endDate);
         if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
             throw new IllegalArgumentException("startDate cannot be after endDate");
         }
@@ -72,6 +78,7 @@ public class FinancialRecordService {
 
     @Transactional
     public FinancialRecord updateRecord(Long recordId, FinancialRecord payload) {
+        log.info("Service call: update financial record id={}", recordId);
         validateRecordPayload(payload);
 
         FinancialRecord existingFinancialRecordEntity = getRecordById(recordId);
@@ -87,6 +94,7 @@ public class FinancialRecordService {
 
     @Transactional
     public void softDeleteRecord(Long recordId) {
+        log.info("Service call: soft delete financial record id={}", recordId);
         FinancialRecord existingFinancialRecordEntity = getRecordById(recordId);
 
         existingFinancialRecordEntity.setIsDeleted(true);
