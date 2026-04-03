@@ -1,15 +1,16 @@
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: zorvyn-mysql
+  db:
+    image: postgres:16-alpine
+    container_name: zorvyn-postgres
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: zorvyn_finance_db
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - mysql_data:/var/lib/mysql
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -23,14 +24,21 @@ services:
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/zorvyn_finance_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: root
-      SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+      APP_BOOTSTRAP_ENABLED: ${APP_BOOTSTRAP_ENABLED:false}
+      APP_BOOTSTRAP_VIEWER_USERNAME: ${APP_BOOTSTRAP_VIEWER_USERNAME:}
+      APP_BOOTSTRAP_VIEWER_PASSWORD: ${APP_BOOTSTRAP_VIEWER_PASSWORD:}
+      APP_BOOTSTRAP_ANALYST_USERNAME: ${APP_BOOTSTRAP_ANALYST_USERNAME:}
+      APP_BOOTSTRAP_ANALYST_PASSWORD: ${APP_BOOTSTRAP_ANALYST_PASSWORD:}
+      APP_BOOTSTRAP_ADMIN_USERNAME: ${APP_BOOTSTRAP_ADMIN_USERNAME:}
+      APP_BOOTSTRAP_ADMIN_PASSWORD: ${APP_BOOTSTRAP_ADMIN_PASSWORD:}
+      PORT: 8080
     depends_on:
-      mysql:
+      db:
         condition: service_healthy
 
 volumes:
-  mysql_data:
+  postgres_data:

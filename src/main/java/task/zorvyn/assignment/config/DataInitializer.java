@@ -1,9 +1,11 @@
 package task.zorvyn.assignment.config;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import task.zorvyn.assignment.entity.FinancialRecord;
 import task.zorvyn.assignment.entity.FinancialRecordType;
 import task.zorvyn.assignment.entity.Role;
@@ -14,6 +16,7 @@ import task.zorvyn.assignment.repository.UserRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -25,32 +28,44 @@ public class DataInitializer implements CommandLineRunner {
     private final FinancialRecordRepository financialRecordRepository;
         private final PasswordEncoder passwordEncoder;
 
+        @Value("${app.bootstrap.enabled:false}")
+        private boolean bootstrapEnabled;
+
+        @Value("${app.bootstrap.viewer.username:}")
+        private String viewerUsername;
+
+        @Value("${app.bootstrap.viewer.password:}")
+        private String viewerPassword;
+
+        @Value("${app.bootstrap.analyst.username:}")
+        private String analystUsername;
+
+        @Value("${app.bootstrap.analyst.password:}")
+        private String analystPassword;
+
+        @Value("${app.bootstrap.admin.username:}")
+        private String adminUsername;
+
+        @Value("${app.bootstrap.admin.password:}")
+        private String adminPassword;
+
     @Override
     public void run(String... args) {
+                if (!bootstrapEnabled) {
+                        return;
+                }
+
         if (userRepository.count() > 0 || financialRecordRepository.count() > 0) {
             return;
         }
 
-        User viewer = userRepository.save(User.builder()
-                .username("viewer.user")
-                .password(passwordEncoder.encode("viewer@123"))
-                .role(Role.VIEWER)
-                .status(UserStatus.ACTIVE)
-                .build());
+                validateBootstrapConfiguration();
 
-        User analyst = userRepository.save(User.builder()
-                .username("analyst.user")
-                .password(passwordEncoder.encode("analyst@123"))
-                .role(Role.ANALYST)
-                .status(UserStatus.ACTIVE)
-                .build());
+                User viewer = userRepository.save(createUser(viewerUsername, viewerPassword, Role.VIEWER));
 
-        User admin = userRepository.save(User.builder()
-                .username("admin.user")
-                .password(passwordEncoder.encode("admin@123"))
-                .role(Role.ADMIN)
-                .status(UserStatus.ACTIVE)
-                .build());
+                User analyst = userRepository.save(createUser(analystUsername, analystPassword, Role.ANALYST));
+
+                User admin = userRepository.save(createUser(adminUsername, adminPassword, Role.ADMIN));
 
         LocalDate today = LocalDate.now();
 
@@ -76,8 +91,44 @@ public class DataInitializer implements CommandLineRunner {
                 record("760.00", FinancialRecordType.EXPENSE, "Operations", today.minusDays(3), "Payment Gateway Charges", viewer)
         );
 
-        financialRecordRepository.saveAll(records);
+                financialRecordRepository.saveAll(records);
     }
+
+        private void validateBootstrapConfiguration() {
+                List<String> missingProperties = new ArrayList<>();
+
+                if (!StringUtils.hasText(viewerUsername)) {
+                        missingProperties.add("app.bootstrap.viewer.username");
+                }
+                if (!StringUtils.hasText(viewerPassword)) {
+                        missingProperties.add("app.bootstrap.viewer.password");
+                }
+                if (!StringUtils.hasText(analystUsername)) {
+                        missingProperties.add("app.bootstrap.analyst.username");
+                }
+                if (!StringUtils.hasText(analystPassword)) {
+                        missingProperties.add("app.bootstrap.analyst.password");
+                }
+                if (!StringUtils.hasText(adminUsername)) {
+                        missingProperties.add("app.bootstrap.admin.username");
+                }
+                if (!StringUtils.hasText(adminPassword)) {
+                        missingProperties.add("app.bootstrap.admin.password");
+                }
+
+                if (!missingProperties.isEmpty()) {
+                        throw new IllegalStateException("Missing required bootstrap properties: " + String.join(", ", missingProperties));
+                }
+        }
+
+        private User createUser(String username, String rawPassword, Role role) {
+                return User.builder()
+                                .username(username)
+                                .password(passwordEncoder.encode(rawPassword))
+                                .role(role)
+                                .status(UserStatus.ACTIVE)
+                                .build();
+        }
 
     private FinancialRecord record(
             String amount,
